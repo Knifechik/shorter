@@ -1,7 +1,9 @@
 package repo
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 	"ozontest/cmd/shorter/internal/app"
 )
@@ -24,21 +26,23 @@ func (r *Repo) Close() error {
 	return r.sql.Close()
 }
 
-func (r *Repo) Insert(u *app.MyURL) error {
+func (r *Repo) Insert(ctx context.Context, u *app.MyURL) error {
 	const query = `INSERT INTO url_table (id, url) VALUES ($1, $2)`
-	_, err := r.sql.Exec(query, u.ID, u.Url)
+	_, err := r.sql.ExecContext(ctx, query, u.ID, u.Url)
 	if err != nil {
-		return err
+		return fmt.Errorf("\nsql.ExecContext: %w", err)
 	}
 	return nil
 }
 
-func (r *Repo) GetURL(id string) (string, error) {
-	var url string
+func (r *Repo) GetURL(ctx context.Context, id string) (*app.MyURL, error) {
+	url := dbUrl{}
 	const query = `SELECT url FROM url_table WHERE id = $1`
-	err := r.sql.QueryRow(query, id).Scan(&url)
+	err := r.sql.QueryRowContext(ctx, query, id).Scan(&url.Url)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("sql.QueryRowContext: %w", err)
 	}
-	return url, nil
+	res := url.convert()
+
+	return res, nil
 }
