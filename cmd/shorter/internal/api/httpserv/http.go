@@ -1,14 +1,16 @@
 package httpserv
 
 import (
+	"context"
 	"github.com/gorilla/mux"
+	"log/slog"
 	"net/http"
 	"ozontest/cmd/shorter/internal/app"
 )
 
 type application interface {
-	SaveURL(*app.MyURL) (*app.MyURL, error)
-	GetURL(string) (string, error)
+	SaveURL(context.Context, *app.MyURL) (*app.MyURL, error)
+	GetURL(context.Context, string) (*app.MyURL, error)
 }
 
 type api struct {
@@ -27,4 +29,9 @@ func New(a application) http.Handler {
 
 	return router
 
+}
+
+func errconv(w http.ResponseWriter, err error) {
+	slog.Error("ERROR:", err)
+	http.Error(w, err.Error(), http.StatusInternalServerError)
 }

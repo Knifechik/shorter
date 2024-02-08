@@ -1,18 +1,23 @@
 package app
 
-func (a *App) SaveURL(url *MyURL) (*MyURL, error) {
+import (
+	"context"
+	"fmt"
+)
+
+func (a *App) SaveURL(ctx context.Context, url *MyURL) (*MyURL, error) {
 	url.ID = RandomShortURL()
-	err := a.repo.Insert(url)
+	err := a.repo.Insert(ctx, url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("repo.Insert: %w", err)
 	}
 	return url, nil
 }
 
-func (a *App) GetURL(id string) (string, error) {
-	url, err := a.repo.GetURL(id)
+func (a *App) GetURL(ctx context.Context, id string) (*MyURL, error) {
+	url, err := a.repo.GetURL(ctx, id)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("repo.GetUrl: %w", err)
 	}
 	return url, nil
 }

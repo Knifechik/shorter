@@ -1,6 +1,8 @@
 package app
 
+import "context"
+
 type Repo interface {
-	Insert(*MyURL) error
-	GetURL(string) (string, error)
+	Insert(context.Context, *MyURL) error
+	GetURL(context.Context, string) (*MyURL, error)
 }
